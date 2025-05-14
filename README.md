@@ -62,6 +62,9 @@ rm /usr/local/bin/fwd
 
 # Usage
 
+> [!NOTE]
+> You may need to add a firewall rule to allow incoming connections on the port you are forwarding to first!
+
 ```shell
 # Get all options
 fwd -h
@@ -88,6 +91,7 @@ fwd 8080 -p 88001
 ## TODO
 
 - [ ] Add support for UDP
+- [ ] Multi-mapping (map multiple ports at once)
 
 ## Contributions
 

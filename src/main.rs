@@ -42,7 +42,7 @@ fn main() {
         debug!("Debug logging enabled");
     }
 
-    let dst_port = args.free[0].parse::<u16>().unwrap();
+    let dst_port = args.free[0].parse::<u16>().expect("Provided port is not a valid number");
     let src_port = args.port.unwrap_or(dst_port + 1);
 
     info!(
@@ -50,7 +50,7 @@ fn main() {
         src_port, dst_port
     );
 
-    let listener = TcpListener::bind(format!("0.0.0.0:{src_port}")).unwrap();
+    let listener = TcpListener::bind(format!("0.0.0.0:{src_port}")).expect("Failed to bind to port");
 
     for stream in listener.incoming() {
         match stream {
