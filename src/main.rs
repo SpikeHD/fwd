@@ -1,4 +1,4 @@
-use std::{io::Write, net::{TcpListener, TcpStream}};
+use std::net::{TcpListener, TcpStream};
 
 use gumdrop::Options;
 use log::DEBUG;
@@ -13,7 +13,9 @@ struct Args {
     #[options(help = "print help message")]
     help: bool,
 
-    #[options(help = "specify port that is exposed to the local network. Default: <local port + 1>")]
+    #[options(
+        help = "specify port that is exposed to the local network. Default: <local port + 1>"
+    )]
     port: Option<u16>,
 
     #[options(help = "enable debug output")]
@@ -43,9 +45,12 @@ fn main() {
     let dst_port = args.free[0].parse::<u16>().unwrap();
     let src_port = args.port.unwrap_or(dst_port + 1);
 
-    info!("Forwarding connections from port {} to port {}", src_port, dst_port);
+    info!(
+        "Forwarding connections from port {} to port {}",
+        src_port, dst_port
+    );
 
-    let listener = TcpListener::bind(format!("0.0.0.0:{}", src_port)).unwrap();
+    let listener = TcpListener::bind(format!("0.0.0.0:{src_port}")).unwrap();
 
     for stream in listener.incoming() {
         match stream {
@@ -54,16 +59,23 @@ fn main() {
                 error!("Error accepting connection: {}", e);
                 continue;
             }
-        }.unwrap_or_else(|e| {
+        }
+        .unwrap_or_else(|e| {
             error!("Error handling connection: {}", e);
         });
     }
 }
 
-fn handle_connection(dst_port: &u16, mut incoming: TcpStream) -> Result<(), Box<dyn std::error::Error>> {
-    let mut local = TcpStream::connect(format!("127.0.0.1:{}", dst_port))?;
+fn handle_connection(
+    dst_port: &u16,
+    mut incoming: TcpStream,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let mut local = TcpStream::connect(format!("127.0.0.1:{dst_port}"))?;
 
-    info!("Incoming connection from {}", incoming.local_addr().unwrap());
+    info!(
+        "Incoming connection from {}",
+        incoming.local_addr().unwrap()
+    );
 
     let mut incoming_clone = incoming.try_clone()?;
     let mut local_clone = local.try_clone()?;
@@ -71,8 +83,10 @@ fn handle_connection(dst_port: &u16, mut incoming: TcpStream) -> Result<(), Box<
     // Client -> Server
     std::thread::spawn(move || {
         match std::io::copy(&mut incoming, &mut local) {
-            Ok(_) => {},
-            Err(e) => { error!("Error forwarding data: {}", e); }
+            Ok(_) => {}
+            Err(e) => {
+                error!("Error forwarding data: {}", e);
+            }
         };
         debug!("Client -> Server thread exiting");
     });
@@ -80,8 +94,10 @@ fn handle_connection(dst_port: &u16, mut incoming: TcpStream) -> Result<(), Box<
     // Server -> Client
     std::thread::spawn(move || {
         match std::io::copy(&mut local_clone, &mut incoming_clone) {
-            Ok(_) => {},
-            Err(e) => { error!("Error forwarding data: {}", e); }
+            Ok(_) => {}
+            Err(e) => {
+                error!("Error forwarding data: {}", e);
+            }
         };
         debug!("Client -> Server thread exiting");
     });
