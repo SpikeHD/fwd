@@ -1,4 +1,4 @@
-name: Fmt and Clippy
+name: fmt and clippy
 
 on:
   push:
